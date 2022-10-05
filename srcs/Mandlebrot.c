@@ -6,20 +6,21 @@
 /*   By: jtanner <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/16 16:16:59 by jtanner           #+#    #+#             */
-/*   Updated: 2022/08/22 16:44:49 by jtanner          ###   ########.fr       */
+/*   Updated: 2022/09/01 16:44:39 by jtanner          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <mlx.h>
+#include "../mlx/mlx.h"
+#include "../includes/fractol.h"
+#include "../includes/keys.h"
 
-void	mandelbrot(t_fractol *f, int x, int y, double cr, double ci)
+int	mandelbrot(t_fractol *f, double cr, double ci)
 {
-	int		n;	// Number of iterations
-	double	zr;	// Real part of Z
-	double	zi;	// Imaginary part of Z
-	double	tmp;	// Temporary variable
-	// Variable to determine if a number is in the set or not:
-	int	is_in_set; 
+	int		n;	
+	double	zr;	
+	double	zi;	
+	double	tmp;
+	int		is_in_set;
 
 	zr = 0;
 	zi = 0;
@@ -27,99 +28,103 @@ void	mandelbrot(t_fractol *f, int x, int y, double cr, double ci)
 	is_in_set = 1;
 	while (++n < MAX_ITERATIONS)
 	{
-		// As long as we're not at the maximum number of iterations,
-		// we iterate
 		if ((zr * zr + zi * zi) > 4.0)
 		{
-			// If the absolute value of Z exceeds 2
-			// (zr * zr + zi * zi) > 4.0 == sqrt(zr * zr + zi * zi) > 2
 			is_in_set = 0;
-			// We flag that this number tends toward infinity, 
-			// and is therefore not part of the set
-			// and we stop iterating
 			break ;
 		}
-		// Calculate the Mandelbrot formula for the next iteration
 		tmp = 2 * zr * zi + ci;
 		zr = zr * zr - zi * zi + cr;
 		zi = tmp;
 	}
-	// If the number is part of the Mandelbrot set,
-	// set the pixel to black, otherwise to white
 	if (is_in_set == 1)
-		draw(f, x, y, 0x000000);
+		return (f->image.end);
 	else
-		draw(f, x, y, 0xFFFFFF);
+		return ((f->image.color - f->image.end) * n / 80 + f->image.end);
 }
 
-void	julia(t_fractol *f, int x, int y, double cr, double ci)
+int	bar(t_fractol *f, double cr, double ci, int c)
 {
-	int		n;	// Number of iterations
-	double	zr;	// Real part of Z
-	double	zi;	// Imaginary part of Z
-	double	tmp;	// Temporary variable
-	// Variable to determine if a number is in the set or not:
-	int	is_in_set; 
+	double	n;	
+	double	zr;	
+	double	zi;	
 
 	zr = 0;
 	zi = 0;
 	n = -1;
+	c = -1;
+	while (++c < MAX_ITERATIONS)
+	{
+		if ((zr * zr + zi * zi) > 4.0)
+		{
+			n = 0;
+			break ;
+		}
+		n = -zi * (5 * ((zr * zr) * (zr * zr)) - 10 * ((zr * zr)
+					* (zi * zi)) + ((zi * zi) * (zi * zi))) + ci;
+		zr = zr * (((zr * zr) * (zr * zr)) - 10 * ((zr * zr)
+					* (zi * zi)) + 5 * ((zi * zi) * (zi * zi))) + cr;
+		zi = n;
+	}
+	if (n != 0)
+		return (f->image.end);
+	else
+		return ((f->image.color - f->image.end) * c / 80 + f->image.end);
+}
+
+int	julia(t_fractol *f, double zr, double zi)
+{
+	int		n;	
+	double	tmp;	
+	int		is_in_set;
+	int		color;
+
+	n = -1;
 	is_in_set = 1;
 	while (++n < MAX_ITERATIONS)
 	{
-		// As long as we're not at the maximum number of iterations,
-		// we iterate
 		if ((zr * zr + zi * zi) > 4.0)
 		{
-			// If the absolute value of Z exceeds 2
-			// (zr * zr + zi * zi) > 4.0 == sqrt(zr * zr + zi * zi) > 2
 			is_in_set = 0;
-			// We flag that this number tends toward infinity, 
-			// and is therefore not part of the set
-			// and we stop iterating
 			break ;
 		}
-		// Calculate the Mandelbrot formula for the next iteration
-		tmp = 2 * zr * zi + f->frac.ki;
+		tmp = 2 * zr * zi + f->fract.ki;
 		zr = zr * zr - zi * zi + f->fract.kr;
 		zi = tmp;
 	}
-	// If the number is part of the Mandelbrot set,
-	// set the pixel to black, otherwise to white
 	if (is_in_set == 1)
-		draw(f, x, y, 0x000000);
+		return (f->image.end);
 	else
-		draw(f, x, y, 0xFFFFFF);
+		color = ((f->image.color - f->image.end) * n
+				/ MAX_ITERATIONS + f->image.end);
+	return (color);
 }
 
-
-}
-
-void	draw_fractal(t_fractol *f)
+void	draw_fractal(t_fractol *f, int c)
 {
-	// x and y coordinates of the pixel:
-	int	x; // column
-	int	y; // line
-	// to map the x and y coordinates of the pixel to a
-	// complex number:
-	double	pr; // real part of the complex number of the pixel
-	double	pi; // imaginary part of the complex number of the pixel
+	int		x;
+	int		y;
+	double	pr;
+	double	pi;
 
-	// Loop over each line and column of the window
-	// to check each pixels
 	y = -1;
-	while (++y < HEIGHT) // line loop
+	while (++y < HEIGHT)
 	{
 		x = -1;
-		while (++x < WIDTH) // column loop
+		while (++x < WIDTH)
 		{
-			// Find pixel[x, y]'s corresponding complex number
-			pr = f->min_r + (double)x * (f->max_r - f->min_r) / WIDTH;
-			pi = f->min_i + (double)y * (f->max_i - f->min_i) / HEIGHT;
-			// Evaluate it and set this pixel's color
-			mandelbrot(f, x, y, pr, pi);
+			pr = f->fract.min_r + (double)x * (f->fract.max_r
+					- f->fract.min_r) / WIDTH;
+			pi = f->fract.min_i + (double)y * (f->fract.max_i
+					- f->fract.min_i) / HEIGHT;
+			if (f->fract.fract == 1)
+				c = mandelbrot(f, pr, pi);
+			else if (f->fract.fract == 2)
+				c = julia(f, pr, pi);
+			else if (f->fract.fract == 3)
+				c = bar(f, pr, pi, c);
+			draw(f, x, y, c);
 		}
 	}
+	mlx_put_image_to_window(f->mlx.init, f->mlx.win, f->image.image, 0, 0);
 }
-
-

@@ -52,6 +52,7 @@ FILES = ft_memset \
 		ft_putendl_fd \
 		ft_putnbr_fd \
 		ft_striteri \
+		ft_putstr \
 		
 
 

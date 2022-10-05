@@ -6,7 +6,7 @@
 /*   By: jtanner <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/09 15:16:15 by jtanner           #+#    #+#             */
-/*   Updated: 2022/03/24 15:15:38 by jtanner          ###   ########.fr       */
+/*   Updated: 2022/07/15 14:53:06 by jtanner          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,4 +57,5 @@ char	*ft_strnstr(const char *haystack, const char *needle, size_t len);
 int		ft_strncmp(const char *s1, const char *s2, size_t n);
 void	*ft_calloc(size_t count, size_t size);
 char	*ft_strdup(char *src);
+void	ft_putstr(char *s);
 #endif
